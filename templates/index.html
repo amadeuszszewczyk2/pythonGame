@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic-Tac-Toe</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <table>
+        {% for row in plansza %}
+            <tr>
+                {% for cell in row %}
+                    <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+    <script>
+        // JavaScript function to send the move to the server
+        function wykonajRuch(wiersz, kolumna) {
+            fetch('/gra', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `wiersz=${wiersz}&kolumna=${kolumna}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.komunikat) {
+                    alert(data.komunikat);
+                }
+                if (data.wygrana) {
+                    alert(data.komunikat);
+                    window.location.reload();
+                }
+                if (data.remis) {
+                    alert(data.komunikat);
+                    window.location.reload();
+                }
+                // Update the board with the latest move
+                updatePlansza(data.plansza);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Function to update the board after each move
+        function updatePlansza(plansza) {
+            const cells = document.querySelectorAll('td');
+            let index = 0;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    cells[index].textContent = plansza[i][j];
+                    index++;
+                }
+            }
+        }
+
+        // Add event listeners to each cell in the table
+        const cells = document.querySelectorAll('td');
+        cells.forEach((cell, index) => {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            cell.addEventListener('click', () => {
+                wykonajRuch(row, col);
+            });
+        });
+    </script>
+</body>
+</html>
